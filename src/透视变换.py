@@ -1,11 +1,13 @@
 # -*- coding:utf-8 -*-
 import cv2
-import matplotlib.image as mpimg 
+import matplotlib.image as mpimg
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 计算透视变换参数矩阵
+
 def cal_perspective_params(img, points):
+    """ 计算透视变换参数矩阵 """
+
     # 设置偏移点。如果设置为(0,0),表示透视结果只显示变换的部分（也就是画框的部分）
     #offset_x = 100
     #offset_y = 100
@@ -24,19 +26,23 @@ def cal_perspective_params(img, points):
     print(M_inverse)
     return M, M_inverse
 
-# 透视变换
+
 def img_perspect_transform(img, M):
+    """ 透视变换 """
+
     img_size = (img.shape[1], img.shape[0])
     return cv2.warpPerspective(img, M, img_size)
 
-def draw_line(img,p1,p2,p3,p4):
+
+def draw_line(img, p1, p2, p3, p4):
     points = [list(p1), list(p2), list(p3), list(p4)]
     # 画线
     img = cv2.line(img, p1, p2, (0, 0, 255), 3)
     img = cv2.line(img, p2, p4, (0, 0, 255), 3)
     img = cv2.line(img, p4, p3, (0, 0, 255), 3)
     img = cv2.line(img, p3, p1, (0, 0, 255), 3)
-    return points,img
+    return points, img
+
 
 if __name__ == '__main__':
     # 观察图像像素大小，便于手动选点
@@ -48,16 +54,17 @@ if __name__ == '__main__':
     plt.show()
     # 选取四个点，分别是左上、右上、左下、右下
     #points, img = draw_line(img, (208, 320), (798, 315), (160, 1308), (1011, 1230))
-    points, img = draw_line(img, (843, 486), (1004, 541), (700, 975), (866, 1003))
-    #cv2.imshow('test01',img)
+    points, img = draw_line(img, (843, 486), (1004, 541),
+                            (700, 975), (866, 1003))
+    # cv2.imshow('test01',img)
     cv2.waitKey(0)
-    cv2.imwrite('test01.png',img)
+    cv2.imwrite('test01.png', img)
     M, M_inverse = cal_perspective_params(img, points)
     trasform_img = img_perspect_transform(img, M)
     # 观察透视图像像素大小
     plt.figure()
     plt.imshow(trasform_img)
     plt.show()
-    #cv2.imshow('test02.png',trasform_img)
-    #cv2.waitKey(0)
-    #cv2.imwrite('test02.png',trasform_img)
+    # cv2.imshow('test02.png',trasform_img)
+    # cv2.waitKey(0)
+    # cv2.imwrite('test02.png',trasform_img)

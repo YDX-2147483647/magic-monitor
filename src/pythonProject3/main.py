@@ -1,4 +1,3 @@
-
 import cv2
 import numpy as np
 import math
@@ -32,10 +31,14 @@ print(h)
 # cv2.waitKey(0)
 # cv2.destroyAllWindow()
 
-src_list = [(229, 70), (208, 590), (591, 588), (513, 83) ]
+src_list = [(229, 70), (208, 590), (591, 588), (513, 83)]
 for i, pt in enumerate(src_list):
     cv2.circle(img, pt, 5, (0, 0, 255), -1)
-    cv2.putText(img, str(i+1), (pt[0]+5, pt[1]+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    cv2.putText(
+        img,
+        str(i+1), (pt[0]+5, pt[1]+10),
+        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2
+    )
 pts1 = np.float32(src_list)
 pts2 = np.float32([[0, 0], [0, w-2], [h-2, w-2], [h - 2, 0]])
 matrix = cv2.getPerspectiveTransform(pts1, pts2)
@@ -60,4 +63,3 @@ p5 = 3/p4*p41
 print(p4)
 print(p5)
 cv2.imwrite('D:/python-picture/ceshi2.png', result)
-
