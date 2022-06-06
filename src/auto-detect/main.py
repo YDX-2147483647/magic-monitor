@@ -30,18 +30,21 @@ lines = cv2.HoughLinesP(canny_img, 1, np.pi/180, 70,
 draw_line(img, lines)
 
 
-def computer_intersect_point(lines):
-    def get_line_k_b(line_point):
-       # 计算直线的斜率和截距
-        #:param line_point: 直线的坐标点
-        #:return:
+def get_line_k_b(line_point):
+    """计算直线的斜率和截距
+    :param line_point: 直线的坐标点
+    :return:
+    """
 
-        # 获取直线的两点坐标
-        x1, y1, x2, y2 = line_point[0]
-        # 计算直线的斜率和截距
-        k = (y1 - y2)/(x1 - x2)
-        b = y2 - x2 * (y1 - y2)/(x1 - x2)
-        return k, b
+    # 获取直线的两点坐标
+    x1, y1, x2, y2 = line_point[0]
+    # 计算直线的斜率和截距
+    k = (y1 - y2)/(x1 - x2)
+    b = y2 - x2 * (y1 - y2)/(x1 - x2)
+    return k, b
+
+
+def computer_intersect_point(lines):
     # 用来存放直线的交点坐标
     line_intersect = []
     for i in range(len(lines)):
@@ -90,7 +93,7 @@ def order_point(points):
     return np.array([left_point, top_point, right_point, bottom_point], dtype=np.float32)
 
 
-def target_vertax_point(clockwise_point):
+def target_vertex_point(clockwise_point):
     # 计算顶点的宽度(取最大宽度)
     w1 = np.linalg.norm(clockwise_point[0]-clockwise_point[1])
     w2 = np.linalg.norm(clockwise_point[2]-clockwise_point[3])
@@ -113,7 +116,7 @@ def target_vertax_point(clockwise_point):
 # 对原始图像的交点坐标进行排序
 clockwise_point = order_point(line_intersect)
 # 获取变换后坐标的位置
-target_clockwise_point = target_vertax_point(clockwise_point)
+target_clockwise_point = target_vertex_point(clockwise_point)
 
 # 计算变换矩阵
 matrix = cv2.getPerspectiveTransform(clockwise_point, target_clockwise_point)

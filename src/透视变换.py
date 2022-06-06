@@ -27,7 +27,7 @@ def cal_perspective_params(img, points):
     return M, M_inverse
 
 
-def img_perspect_transform(img, M):
+def img_perspective_transform(img, M):
     """ 透视变换 """
 
     img_size = (img.shape[1], img.shape[0])
@@ -60,11 +60,11 @@ if __name__ == '__main__':
     cv2.waitKey(0)
     cv2.imwrite('test01.png', img)
     M, M_inverse = cal_perspective_params(img, points)
-    trasform_img = img_perspect_transform(img, M)
+    transform_img = img_perspective_transform(img, M)
     # 观察透视图像像素大小
     plt.figure()
-    plt.imshow(trasform_img)
+    plt.imshow(transform_img)
     plt.show()
-    # cv2.imshow('test02.png',trasform_img)
+    # cv2.imshow('test02.png',transform_img)
     # cv2.waitKey(0)
-    # cv2.imwrite('test02.png',trasform_img)
+    # cv2.imwrite('test02.png',transform_img)

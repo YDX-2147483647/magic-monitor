@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
-import math
+from math import hypot
 
-img = cv2.imread("D:/python-picture/use/shouxie.jpg")
+img = cv2.imread("data/example/example.png")
 h, w, c = img.shape
-print(h)
+print(f"height: {h}, width: {w}, channel: {c}.")
+
 # 用于标注图片上的点的坐标
 # def on_event(event, x, y, flags, param):
 #     if event == cv2.EVENT_LBUTTONDOWN:
@@ -32,6 +33,8 @@ print(h)
 # cv2.destroyAllWindow()
 
 src_list = [(229, 70), (208, 590), (591, 588), (513, 83)]
+
+# 标注`src_list`
 for i, pt in enumerate(src_list):
     cv2.circle(img, pt, 5, (0, 0, 255), -1)
     cv2.putText(
@@ -39,27 +42,36 @@ for i, pt in enumerate(src_list):
         str(i+1), (pt[0]+5, pt[1]+10),
         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2
     )
+cv2.imshow("Image", img)
+
+# 变换
 pts1 = np.float32(src_list)
 pts2 = np.float32([[0, 0], [0, w-2], [h-2, w-2], [h - 2, 0]])
 matrix = cv2.getPerspectiveTransform(pts1, pts2)
 result = cv2.warpPerspective(img, matrix, (h, w))
-print(matrix)
-cv2.imshow("Image", img)
+print('变换矩阵：', matrix, sep='\n')
+
 cv2.imshow("Perspective transformation", result)
+cv2.imwrite('output/perspective_transformation.png', result)
+
 cv2.waitKey(0)
+
+
+# 一些计算？
+
 # p1 = np.array([208, 590])
 # p2 = np.array([591, 588])
 # p22 = np.array([513, 83])
 # p11 = np.array([229, 70])
+
 p1 = np.array([0, w-2])
 p2 = np.array([h-2, w-2])
 p22 = np.array([h-2, 0])
 p11 = np.array([0, 0])
 p3 = p2 - p1
 p31 = p22 - p2
-p4 = math.hypot(p3[0], p3[1])
-p41 = math.hypot(p31[0], p31[1])
+p4 = hypot(p3[0], p3[1])
+p41 = hypot(p31[0], p31[1])
 p5 = 3/p4*p41
-print(p4)
-print(p5)
-cv2.imwrite('D:/python-picture/ceshi2.png', result)
+print(f"{p4 = }")
+print(f"{p5 = }")
