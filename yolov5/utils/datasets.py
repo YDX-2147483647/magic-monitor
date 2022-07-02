@@ -78,7 +78,7 @@ def create_dataloader(path, imgsz, batch_size, stride, opt, hyp=None, augment=Fa
     # Use torch.utils.data.DataLoader() if dataset.properties will update during training else InfiniteDataLoader()
     dataloader = loader(dataset,
                         batch_size=batch_size,
-                        num_workers=nw,
+                        num_workers=0,
                         sampler=sampler,
                         pin_memory=True,
                         collate_fn=LoadImagesAndLabels.collate_fn4 if quad else LoadImagesAndLabels.collate_fn)
@@ -276,7 +276,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
             # Start the thread to read frames from the video stream
             print(f'{i + 1}/{n}: {s}... ', end='')
             url = eval(s) if s.isnumeric() else s
-            if 'youtube.com/' in url or 'youtu.be/' in url:  # if source is YouTube video
+            if 'youtube.com/' in str(url) or 'youtu.be/' in str(url):  # if source is YouTube video
                 check_requirements(('pafy', 'youtube_dl'))
                 import pafy
                 url = pafy.new(url).getbest(preftype="mp4").url
