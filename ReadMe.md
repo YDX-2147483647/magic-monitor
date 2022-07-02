@@ -4,7 +4,7 @@
 
 ## 文件结构
 
-- `src/`：源代码（source）。
+- `src/`：透视变换源代码（source）。
 
   - `manual/`
 
@@ -13,6 +13,10 @@
   - `auto-detect/`
 
     有直线检测，可以通过直线的交点自动标点，但是在轨道上会检测出很多直线，变得奇奇怪怪的，还需要改进一下。
+
+- `yolov5/`：YOLO v5。
+
+  基于 [Release v5.0 - YOLOv5 - ultralytics/yolov5 (github.com)](https://github.com/ultralytics/yolov5/releases/tag/v5.0)。
 
 - `data/`：数据
 
