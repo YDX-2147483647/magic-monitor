@@ -1,5 +1,8 @@
-/data/
-!/data/predefined_classes.txt
+/data/Images/
+/data/JPEGImages/
+/data/JPG/
+/data/Annotations/
+/data/XML/
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
