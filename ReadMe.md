@@ -18,6 +18,8 @@
 
   基于 [Release v5.0 - YOLOv5 - ultralytics/yolov5 (github.com)](https://github.com/ultralytics/yolov5/releases/tag/v5.0)。
 
+  参考了《[目标检测——手把手教你搭建自己的YOLOv5目标检测平台](https://blog.csdn.net/didiaopao/category_11321656.html)》及[对应视频](https://www.bilibili.com/video/BV1f44y187Xg)。
+
 - `data/`：数据
 
   **数据不会推送到仓库里。**
