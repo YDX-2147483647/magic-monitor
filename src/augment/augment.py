@@ -6,6 +6,7 @@ Example:
 
 from argparse import ArgumentParser
 from pathlib import Path
+from time import localtime, strftime
 
 import cv2
 from numpy import array, ones_like, float32
@@ -23,8 +24,16 @@ def prepare_parser() -> ArgumentParser:
     parser = ArgumentParser(description='针对透视增强数据')
     parser.add_argument('input_annotations', help='原数据标签所在目录', type=str)
     parser.add_argument('input_images', help='原数据照片所在目录', type=str)
-    parser.add_argument('output_annotations', help='制造出的数据的标签保存目录', type=str)
-    parser.add_argument('output_images', help='制造出的数据的照片保存目录', type=str)
+    parser.add_argument(
+        'output_annotations',
+        help='制造出的数据的标签保存目录，不存在则自动创建，可以和 input_annotations 相同',
+        type=str
+    )
+    parser.add_argument(
+        'output_images',
+        help='制造出的数据的照片保存目录，不存在则自动创建，可以和 input_images 相同',
+        type=str
+    )
     return parser
 
 
@@ -40,6 +49,16 @@ def check_args(args: Namespace) -> None:
 
     Path(args.output_annotations).mkdir(exist_ok=True, parents=True)
     Path(args.output_images).mkdir(exist_ok=True, parents=True)
+
+
+def transform_stem(src: str) -> str:
+    """ 转换文件名
+    :param src: 原数据的 stem
+    :returns: 制造出的数据的 stem
+    """
+
+    time_stamp = strftime('%Y-%m-%d-%H_%M_%S', localtime())
+    return f"{src}-augment-{time_stamp}"
 
 
 def generate_transform(
@@ -66,14 +85,14 @@ def generate_transform(
     return cv2.getPerspectiveTransform(src, src + shift)
 
 
-def warp_annotation(src: PascalVOC, M: Mat) -> None:
+def warp_annotation(annotation: PascalVOC, M: Mat) -> None:
     """ 变换标签中的框（bound box）
     会在原地修改。
-    :param src: 原标签的路径
+    :param annotation: 标签
     :param M: 变换矩阵
     """
 
-    for obj in src.objects:
+    for obj in annotation.objects:
         src_points = array([
             (obj.bndbox.xmin, obj.bndbox.ymin, 1),
             (obj.bndbox.xmax, obj.bndbox.ymin, 1),
@@ -91,6 +110,17 @@ def warp_annotation(src: PascalVOC, M: Mat) -> None:
         )
 
 
+def transform_names_in_annotation(annotation: PascalVOC, image_path: Path) -> None:
+    """ 修改标签中的各种文件名
+    会在原地修改。
+    :param annotation: 标签
+    :param image: 照片的路径
+    """
+
+    annotation.filename = image_path.name
+    annotation.path = str(image_path.resolve())
+
+
 def augment(
     input_annotations: str, input_images: str,
     output_annotations: str, output_images: str
@@ -103,8 +133,11 @@ def augment(
         # 准备路径
         annotation_path = Path(input_annotations) / (image_path.stem + '.xml')
         assert annotation_path.exists(), f"缺少标签：{annotation_path}。"
-        image_out_path = Path(output_images) / image_path.name
-        annotation_out_path = Path(output_annotations) / annotation_path.name
+
+        out_stem = transform_stem(image_path.stem)
+        image_out_path = Path(output_images) / f"{out_stem}{image_path.suffix}"
+        annotation_out_path = Path(
+            output_annotations) / f"{out_stem}{annotation_path.suffix}"
 
         # 读取
         image = cv2.imread(str(image_path))
@@ -115,6 +148,7 @@ def augment(
         mat = generate_transform(height, width)
         image_out = cv2.warpPerspective(image, mat, (width, height))
         warp_annotation(annotation, mat)
+        transform_names_in_annotation(annotation, image_out_path)
 
         # 保存
         cv2.imwrite(str(image_out_path), image_out)
