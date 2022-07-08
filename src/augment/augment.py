@@ -9,7 +9,7 @@ from pathlib import Path
 from time import localtime, strftime
 
 import cv2
-from numpy import array, ones_like, float32, int32
+from numpy import array, ones_like, float32, int32, newaxis
 from numpy.random import default_rng
 from pascal import PascalVOC, BndBox
 
@@ -107,6 +107,7 @@ def warp_annotation(annotation: PascalVOC, M: Mat, demo=False) -> list[tuple[NDA
         ])
 
         dst_points: NDArray = src_points @ M.T
+        dst_points = dst_points[:, :-1] / dst_points[:, -1, newaxis]
 
         obj.bndbox = BndBox(
             xmin=int(dst_points[(0, 3), 0].mean()),
@@ -116,7 +117,7 @@ def warp_annotation(annotation: PascalVOC, M: Mat, demo=False) -> list[tuple[NDA
         )
 
         if demo:
-            record.append((dst_points[:, :-1], obj.bndbox))
+            record.append((dst_points, obj.bndbox))
 
     return record
 
