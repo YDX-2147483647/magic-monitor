@@ -80,7 +80,7 @@ def generate_transform(
     shift[:, 1] *= height
     # 此时 shift == [ (width, height), … ]。
 
-    shift *= rng.uniform(low=-0.05, high=0.05, size=shift.shape)
+    shift *= rng.uniform(low=-0.08, high=0.08, size=shift.shape)
 
     return cv2.getPerspectiveTransform(src, src + shift)
 
