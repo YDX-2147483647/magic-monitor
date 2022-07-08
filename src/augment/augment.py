@@ -9,7 +9,7 @@ from pathlib import Path
 from time import localtime, strftime
 
 import cv2
-from numpy import array, ones_like, float32
+from numpy import array, ones_like, float32, int32
 from numpy.random import default_rng
 from pascal import PascalVOC, BndBox
 
@@ -34,6 +34,7 @@ def prepare_parser() -> ArgumentParser:
         help='制造出的数据的照片保存目录，不存在则自动创建，可以和 input_images 相同',
         type=str
     )
+    parser.add_argument('--demo', action='store_true', help='保存图片时演示变换情况')
     return parser
 
 
@@ -85,12 +86,17 @@ def generate_transform(
     return cv2.getPerspectiveTransform(src, src + shift)
 
 
-def warp_annotation(annotation: PascalVOC, M: Mat) -> None:
+def warp_annotation(annotation: PascalVOC, M: Mat, demo=False) -> list[tuple[NDArray, BndBox]]:
     """ 变换标签中的框（bound box）
     会在原地修改。
     :param annotation: 标签
     :param M: 变换矩阵
+    :param demo: 是否为演示模式
+    :returns: 演示模式下返回 [(destination_points, bound box)]，否则返回 []
+        destination_points 的顺序：bottom-left, bottom-right, top-right, top-left
     """
+
+    record = []
 
     for obj in annotation.objects:
         src_points = array([
@@ -109,6 +115,11 @@ def warp_annotation(annotation: PascalVOC, M: Mat) -> None:
             ymax=int(dst_points[(2, 3), 1].mean()),
         )
 
+        if demo:
+            record.append((dst_points[:, :-1], obj.bndbox))
+
+    return record
+
 
 def transform_names_in_annotation(annotation: PascalVOC, image_path: Path) -> None:
     """ 修改标签中的各种文件名
@@ -123,7 +134,8 @@ def transform_names_in_annotation(annotation: PascalVOC, image_path: Path) -> No
 
 def augment(
     input_annotations: str, input_images: str,
-    output_annotations: str, output_images: str
+    output_annotations: str, output_images: str,
+    demo=False
 ) -> None:
     """
     → python augment.py --help
@@ -146,9 +158,21 @@ def augment(
         # 变换
         height, width = image.shape[:2]
         mat = generate_transform(height, width)
-        image_out = cv2.warpPerspective(image, mat, (width, height))
-        warp_annotation(annotation, mat)
+        image_out: Mat = cv2.warpPerspective(image, mat, (width, height))
+        record = warp_annotation(annotation, mat, demo)
         transform_names_in_annotation(annotation, image_out_path)
+
+        # 演示
+        if demo:
+            for dst_points, box in record:
+                dst_points = dst_points.astype(dtype=int32).reshape((-1, 1, 2))
+                cv2.polylines(
+                    img=image_out,
+                    pts=[dst_points],
+                    isClosed=True,
+                    color=(0x80, 0x00, 0x80),
+                    thickness=5
+                )
 
         # 保存
         cv2.imwrite(str(image_out_path), image_out)
