@@ -24,6 +24,9 @@
 
   参考了《[目标检测——手把手教你搭建自己的YOLOv5目标检测平台](https://blog.csdn.net/didiaopao/category_11321656.html)》及[对应视频](https://www.bilibili.com/video/BV1f44y187Xg)。
 
+    - `detect.py`：识别。
+    - `measure.py`：测距、画图。
+
 - `data/`：数据
 
   **数据不会推送到仓库里。**
