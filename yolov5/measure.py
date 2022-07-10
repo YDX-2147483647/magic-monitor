@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 import cv2
 
-from utils.coordinate_trans_2 import get_distance
+from utils.distance_perspective import get_distance
 from utils.draw import draw_grid
 
 
