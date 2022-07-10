@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from numpy import array, float32, newaxis, repeat, uint8, linspace, ones, hstack
+from numpy import array, float32, newaxis, repeat, uint8, arange, ones, hstack
 import cv2
 
 from utils.coordinate_trans_2 import transform, transform_inv
@@ -42,10 +42,12 @@ def get_grid_ROI(height: int, width: int) -> SimpleNamespace:
 def draw_grid(
     canvas: Mat, *,
     color: Tuple[int, int, int] = (0, 0, 0),
-    n_lines=(15, 10)
+    # n_lines=(15, 10),
+    step=(1., 1.)
 ) -> None:
     """
     :param n_lines: x,y 坐标面（线）的数量
+    :param step: x,y 坐标面（线）的间距
     """
 
     height, width = canvas.shape[:2]
@@ -53,11 +55,11 @@ def draw_grid(
 
     # Draw lines: x_real = Const.
 
-    xs_real = linspace(*ranges_real.x, num=n_lines[0])
+    xs_real = arange(*ranges_real.x, step=step[0])
     # end_points_real[#top_or_bottom][#n, #space_dimension]
     end_points_real = [hstack((
         xs_real[..., newaxis],
-        ones((n_lines[0], 1)) * y
+        ones((xs_real.shape[0], 1)) * y
     )) for y in ranges_real.y]
 
     end_points = [transform_inv(p) for p in end_points_real]
@@ -66,10 +68,10 @@ def draw_grid(
 
     # Draw lines: y_real = Const.
 
-    ys_real = linspace(*ranges_real.y, num=n_lines[1])
+    ys_real = arange(*ranges_real.y, step=step[1])
     # end_points_real[#top_or_bottom][#n, #space_dimension]
     end_points_real = [hstack((
-        ones((n_lines[1], 1)) * x,
+        ones((ys_real.shape[0], 1)) * x,
         ys_real[..., newaxis]
     )) for x in ranges_real.x]
 
