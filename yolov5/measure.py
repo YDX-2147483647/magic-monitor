@@ -1,3 +1,8 @@
+"""
+workspace: /yolov5/
+requirements: /yolov5/requirements.txt
+"""
+
 import argparse
 import time
 from pathlib import Path
@@ -14,10 +19,7 @@ from tqdm import tqdm
 
 import cv2
 
-
-def get_distance_new(x1: float, y1: float, x2: float, y2: float) -> float:
-    # todo
-    return 6.00
+from utils.coordinate_trans_2 import get_distance
 
 
 def detect():
@@ -112,7 +114,7 @@ def detect():
 
                     for i in range(len(centerx)-1):
                         for j in range((i+1), len(centerx)):
-                            dis = get_distance_new(
+                            dis = get_distance(
                                 cex[i], cey[i], cex[j], cey[j])
                             dis = round(dis, 2)
                             ptStart = (int(centerx[i]), int(centery[i]))
