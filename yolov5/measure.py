@@ -20,6 +20,7 @@ from tqdm import tqdm
 import cv2
 
 from utils.coordinate_trans_2 import get_distance
+from utils.draw import draw_grid
 
 
 def detect():
@@ -128,6 +129,8 @@ def detect():
                                      point_color, thickness, lineType)
                             cv2.putText(im0, str(dis), (cenx-25, ceny-25),
                                         cv2.FONT_HERSHEY_COMPLEX, 1.5, (0, 0, 255), 3)
+
+                draw_grid(im0)
 # -----------------------------------------------------------------------------------------------------------------------
 
             # Stream results
@@ -191,5 +194,7 @@ if __name__ == '__main__':
         '--name', 'exp-locked',
         # '--view-img',
     ])
+    # read more arguments from the command-line
+    opt = parser.parse_args(namespace=opt)
 
     detect()
