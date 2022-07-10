@@ -11,10 +11,13 @@ from numpy.typing import NDArray
 
 # 选取四个点，分别是左上、右上、左下、右下
 srcPoints = array([
-    [257.8, 176.4], [420.0, 174.9],
-    [249.4, 196.3], [428.4, 196.3]
+    [419, 351], [1059, 357],
+    [127, 965], [1781, 975]
 ], dtype=float32)
-canvasPoints = array([[0, 0], [6, 0], [0, 6], [6, 6]], dtype=float32)
+canvasPoints = array([
+    [0, 42], [12, 42],
+    [0, 0], [12, 0]
+], dtype=float32)
 M = cv2.getPerspectiveTransform(array(srcPoints), array(canvasPoints))
 M = array(M)
 M_inv = inv(M)
