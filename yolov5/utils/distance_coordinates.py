@@ -80,7 +80,7 @@ def shift_coordinates_inv(dst_points: NDArray) -> NDArray:
 
 
 def transform(src_points: NDArray) -> NDArray:
-    """ 照片 ↓ 实际
+    """ 照片 → 实际
     坐标格式：points[#point, #space_dimension]
     """
 
@@ -92,7 +92,7 @@ def transform(src_points: NDArray) -> NDArray:
 
 
 def transform_inv(dst_points: NDArray) -> NDArray:
-    """ 实际 ↓ 照片
+    """ 实际 → 照片
     坐标格式：points[#point, #space_dimension]
     """
 

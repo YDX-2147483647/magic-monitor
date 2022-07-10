@@ -88,7 +88,7 @@ def draw_grid(
 if __name__ == '__main__':
     width, height = 1920, 1080
     canvas = ones((height, width, 3), dtype=uint8) * 255
-    draw_grid(canvas, n_lines=(30, 20))
+    draw_grid(canvas)
 
     cv2.namedWindow('Grid', cv2.WINDOW_AUTOSIZE)
     cv2.imshow('Grid', canvas)
