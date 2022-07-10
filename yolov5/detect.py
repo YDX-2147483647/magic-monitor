@@ -1,7 +1,8 @@
 import argparse
 import time
 from pathlib import Path
-
+# import PIL
+# from PIL import Image,ImageDraw,ImageFont  
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
@@ -13,6 +14,90 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
     scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized
+import math as m
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+from scipy.optimize import fsolve
+
+import cv2
+import numpy as np 
+import math
+
+def get_X_Y_new(x,y):
+    # 选取四个点，分别是左上、右上、左下、右下
+    srcPoints = np.float32([[257.8,176.4],[420.0,174.9],[249.4,196.3],[428.4,196.3]])
+    canvasPoints = np.float32([[0,0],[6,0],[0,6],[6,6]])
+    M = cv2.getPerspectiveTransform(np.array(srcPoints),np.array(canvasPoints))
+    print(M)
+    X=(M[0][0]*x+M[0][1]*y+M[0][2])/(M[2][0]*x+M[2][1]*y+M[2][2])
+    Y=(M[1][0]*x+M[1][1]*y+M[1][2])/(M[2][0]*x+M[2][1]*y+M[2][2])
+    return X,Y
+
+def get_distance_new(x1,y1,x2,y2):
+    X1,Y1=get_X_Y_new(x1,y1)
+    X2,Y2=get_X_Y_new(x2,y2)
+    distance=math.sqrt((X1-X2)**2+(Y1-Y2)**2)
+    return distance
+
+def get_k_UG(H,W,h,beta_2,alpha_2,gama):
+    '''
+    x,y为图像平面坐标系的坐标
+    X,Y为路平面坐标系的坐标
+    H为图像的高,W为图像的宽,h为摄像机的安装高度,beta_2为摄像机镜头的水平视野角
+    alpha_2为摄像机镜头的垂直视野角,gama为摄像机的俯仰角
+    所有角度均采用弧度制
+    '''
+    k1=2*m.tan(alpha_2/2)/H
+    k2=m.tan(gama)
+    k3=h/m.cos(gama)
+    k4=2*m.tan(beta_2/2)/W
+    UG=h*(m.tan(gama)-m.tan(gama-alpha_2/2))*m.cos(gama-alpha_2/2)/(m.cos(gama-alpha_2/2)-m.cos(gama))
+    return k1,k2,k3,k4,UG
+
+
+def get_X_Y(x,y,H,W,h,beta_2,alpha_2,gama):
+    '''
+    x,y为图像平面坐标系的坐标
+    X,Y为路平面坐标系的坐标
+    H为图像的高,W为图像的宽,h为摄像机的安装高度,beta_2为摄像机镜头的水平视野角
+    alpha_2为摄像机镜头的垂直视野角,gama为摄像机的俯仰角
+    所有角度均采用弧度制
+    '''
+    k1,k2,k3,k4,UG=get_k_UG(H,W,h,beta_2,alpha_2,gama);
+    Y=h*k1*y*(1+k2**2)/(1-k2*k1*y);
+    X=(UG+Y)/UG*k3*x*k4;
+    return X,Y
+
+def get_distance(x1,y1,x2,y2,H,W,h,beta_2,alpha_2,gama):
+    '''
+    H为图像的高,W为图像的宽,h为摄像机的安装高度,beta_2为摄像机镜头的水平视野角
+    alpha_2为摄像机镜头的垂直视野角,gama为摄像机的俯仰角
+    所有角度均采用弧度制
+    x,y为图像平面坐标系的坐标
+    X,Y为路平面坐标系的坐标
+    '''
+    X1,Y1=get_X_Y(x1,y1,H,W,h,beta_2,alpha_2,gama);
+    X2,Y2=get_X_Y(x2,y2,H,W,h,beta_2,alpha_2,gama);
+    distance=m.sqrt((X1-X2)**2+(Y1-Y2)**2);
+    return distance
+
+#坐标为第一个框(x1_1,y1_1)(x1_2,y1_2)   第二个框(x2_1,y2_1)(x2_2,y2_2)
+#W,H分别为图像的宽度和高度
+def get_real_distance(x1,y1,x2,y2,W,H):
+    '''
+    H为图像的高,W为图像的宽,h为摄像机的安装高度,beta_2为摄像机镜头的水平视野角
+    alpha_2为摄像机镜头的垂直视野角,gama为摄像机的俯仰角
+    所有角度均采用弧度制
+    x,y为图像平面坐标系的坐标
+    '''
+    h=7.13
+    #视野角有相应的计算算法
+    beta_2=3.611  #微调
+    alpha_2=3.221#微调
+    gama=-6.87/180*m.pi
+    distance=get_distance(x1,y1,x2,y2,H,W,h,beta_2,alpha_2,gama)
+    print(distance)
+    return distance
 
 
 def detect(save_img=False):
@@ -99,7 +184,12 @@ def detect(save_img=False):
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
+            
+                centerx = [] 
+                centery = []
+                cex = []
+                cey = []
+                
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
                     if save_txt:  # Write to file
@@ -110,8 +200,41 @@ def detect(save_img=False):
 
                     if save_img or view_img:  # Add bbox to image
                         label = f'{names[int(cls)]} {conf:.2f}'
-                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
-
+                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=5)
+                        
+                        #添加的代码
+#-----------------------------------------------------------------------------------------------------------------------                     
+                    x = (xyxy[0].item()+xyxy[2].item())/2
+                    y = (xyxy[1].item()+xyxy[3].item())/2
+                    centerx.append(x)
+                    centery.append(y)
+                    cex.append(x)
+                    cey.append(xyxy[3].item())
+                    print('\n')
+                    print('('+str(x)+','+str(xyxy[3].item())+')')
+                    
+                sp = im0.shape
+                print(sp)
+                h = sp[0]
+                w = sp[1]
+                
+                for i in range(len(centerx)):
+                    cv2.circle(im0, (int(centerx[i]), int(centery[i])), 5, (0,0,255), 5)
+                
+                for i in range(len(centerx)-1):
+                    for j in range((i+1),len(centerx)):
+                        dis = get_distance_new(cex[i],cey[i],cex[j],cey[j])
+                        dis = round(dis,2)
+                        ptStart = (int(centerx[i]),int(centery[i]))
+                        ptEnd = (int(centerx[j]),int(centery[j]))
+                        point_color = (0,0,255)  # BGR
+                        thickness = 3
+                        lineType = 4
+                        cenx = int((centerx[i]+centerx[j])/2)
+                        ceny = int((centery[i]+centery[j])/2)
+                        cv2.line(im0, ptStart, ptEnd, point_color, thickness, lineType)
+                        cv2.putText(im0,str(dis), (cenx-25,ceny-25), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,0,255), 3)
+#-----------------------------------------------------------------------------------------------------------------------           
             # Print time (inference + NMS)
             print(f'{s}Done. ({t2 - t1:.3f}s)')
 
@@ -149,9 +272,9 @@ def detect(save_img=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='weights/best.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='test_picture/55132.png', help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--source', type=str, default='test_video/old.mp4', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results',default=True)
@@ -176,3 +299,4 @@ if __name__ == '__main__':
                 strip_optimizer(opt.weights)
         else:
             detect()
+    
