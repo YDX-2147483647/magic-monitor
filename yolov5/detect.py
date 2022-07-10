@@ -204,36 +204,38 @@ def detect(save_img=False):
                         
                         #添加的代码
 #-----------------------------------------------------------------------------------------------------------------------                     
-                    x = (xyxy[0].item()+xyxy[2].item())/2
-                    y = (xyxy[1].item()+xyxy[3].item())/2
-                    centerx.append(x)
-                    centery.append(y)
-                    cex.append(x)
-                    cey.append(xyxy[3].item())
-                    print('\n')
-                    print('('+str(x)+','+str(xyxy[3].item())+')')
+                    if False:
+                        x = (xyxy[0].item()+xyxy[2].item())/2
+                        y = (xyxy[1].item()+xyxy[3].item())/2
+                        centerx.append(x)
+                        centery.append(y)
+                        cex.append(x)
+                        cey.append(xyxy[3].item())
+                        print('\n')
+                        print('('+str(x)+','+str(xyxy[3].item())+')')
                     
-                sp = im0.shape
-                print(sp)
-                h = sp[0]
-                w = sp[1]
-                
-                for i in range(len(centerx)):
-                    cv2.circle(im0, (int(centerx[i]), int(centery[i])), 5, (0,0,255), 5)
-                
-                for i in range(len(centerx)-1):
-                    for j in range((i+1),len(centerx)):
-                        dis = get_distance_new(cex[i],cey[i],cex[j],cey[j])
-                        dis = round(dis,2)
-                        ptStart = (int(centerx[i]),int(centery[i]))
-                        ptEnd = (int(centerx[j]),int(centery[j]))
-                        point_color = (0,0,255)  # BGR
-                        thickness = 3
-                        lineType = 4
-                        cenx = int((centerx[i]+centerx[j])/2)
-                        ceny = int((centery[i]+centery[j])/2)
-                        cv2.line(im0, ptStart, ptEnd, point_color, thickness, lineType)
-                        cv2.putText(im0,str(dis), (cenx-25,ceny-25), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,0,255), 3)
+                if False:
+                    sp = im0.shape
+                    print(sp)
+                    h = sp[0]
+                    w = sp[1]
+                    
+                    for i in range(len(centerx)):
+                        cv2.circle(im0, (int(centerx[i]), int(centery[i])), 5, (0,0,255), 5)
+                    
+                    for i in range(len(centerx)-1):
+                        for j in range((i+1),len(centerx)):
+                            dis = get_distance_new(cex[i],cey[i],cex[j],cey[j])
+                            dis = round(dis,2)
+                            ptStart = (int(centerx[i]),int(centery[i]))
+                            ptEnd = (int(centerx[j]),int(centery[j]))
+                            point_color = (0,0,255)  # BGR
+                            thickness = 3
+                            lineType = 4
+                            cenx = int((centerx[i]+centerx[j])/2)
+                            ceny = int((centery[i]+centery[j])/2)
+                            cv2.line(im0, ptStart, ptEnd, point_color, thickness, lineType)
+                            cv2.putText(im0,str(dis), (cenx-25,ceny-25), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,0,255), 3)
 #-----------------------------------------------------------------------------------------------------------------------           
             # Print time (inference + NMS)
             print(f'{s}Done. ({t2 - t1:.3f}s)')
@@ -277,7 +279,7 @@ if __name__ == '__main__':
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--view-img', action='store_true', help='display results',default=True)
+    parser.add_argument('--view-img', action='store_true', help='display results')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
     parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
     parser.add_argument('--nosave', action='store_true', help='do not save images/videos')
@@ -288,7 +290,14 @@ if __name__ == '__main__':
     parser.add_argument('--project', default='runs/detect', help='save results to project/name')
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
-    opt = parser.parse_args()
+    opt = parser.parse_args([
+        '--weights', 'weights/best-0707.pt',
+        '--source', 'test_video/old-trim.mp4',
+        '--save-txt',
+        '--save-conf',
+        '--exist-ok'
+        # '--view-img',
+    ])
     print(opt)
     check_requirements(exclude=('pycocotools', 'thop'))
 
