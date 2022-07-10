@@ -3,7 +3,8 @@ from types import SimpleNamespace
 from numpy import array, float32, newaxis, repeat, uint8, arange, ones, hstack
 import cv2
 
-from utils.distance_perspective import transform, transform_inv
+# from utils.distance_perspective import transform, transform_inv
+from utils.distance_coordinates import transform, transform_inv
 
 
 # Typing
@@ -42,8 +43,9 @@ def get_grid_ROI(height: int, width: int) -> SimpleNamespace:
 def draw_grid(
     canvas: Mat, *,
     color: Tuple[int, int, int] = (0, 0, 0),
+    thickness: int = 1,
     # n_lines=(15, 10),
-    step=(1., 1.)
+    step = (1., 1.),
 ) -> None:
     """
     :param n_lines: x,y 坐标面（线）的数量
@@ -64,7 +66,8 @@ def draw_grid(
 
     end_points = [transform_inv(p) for p in end_points_real]
     for start, stop in zip(*end_points):
-        cv2.line(canvas, start.astype(int), stop.astype(int), color=color)
+        cv2.line(canvas, start.astype(int), stop.astype(int),
+                 color=color, thickness=thickness)
 
     # Draw lines: y_real = Const.
 
@@ -77,7 +80,9 @@ def draw_grid(
 
     end_points = [transform_inv(p) for p in end_points_real]
     for start, stop in zip(*end_points):
-        cv2.line(canvas, start.astype(int), stop.astype(int), color=color)
+        cv2.line(canvas,
+                 start.astype(int), stop.astype(int),
+                 color=color, thickness=thickness)
 
 
 if __name__ == '__main__':

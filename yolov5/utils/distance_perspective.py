@@ -55,3 +55,8 @@ def transform_inv(dst_points: NDArray) -> NDArray:
     src_points: NDArray = dst_points @ M_inv.T
     src_points = src_points[:, :-1] / src_points[:, -1, newaxis]
     return src_points
+
+
+if __name__ == '__main__':
+    print('变换矩阵：')
+    print(M)

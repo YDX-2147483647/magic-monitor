@@ -19,7 +19,8 @@ from tqdm import tqdm
 
 import cv2
 
-from utils.distance_perspective import get_distance
+# from utils.distance_perspective import get_distance
+from utils.distance_coordinates import get_distance
 from utils.draw import draw_grid
 
 
@@ -44,6 +45,8 @@ def detect():
     # Run inference
     t0 = time.time()
     for path, img, im0s, vid_cap in tqdm(dataset, unit='frames', total=dataset.nframes):
+        cv2.namedWindow(str(path), cv2.WINDOW_GUI_NORMAL)
+
         img = torch.from_numpy(img).float()
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
